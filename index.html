@@ -1,0 +1,140 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Recipes</title>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+  <!-- jQuery library -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+  <!-- Latest compiled JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+  <style>
+    body {
+      background-color: linen;
+    }
+    #recipeList {
+      margin-top: 40px;
+      margin-right: 10px;
+      padding: 10px;
+      height: 800px;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      background-color: white;
+      border-style: solid;
+      border-width: 1px;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    }
+    #recipeDisplay {
+      margin-top: 40px;
+      padding: 10px;
+      height: 800px;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      background-color: white;
+      border-style: solid;
+      border-width: 1px;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    }
+    #listItem {
+      cursor: pointer;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="container">
+  <div class="row">
+    <div id="recipeList" class="col-sm-3">
+      <ul id="list" class="list-group">
+      </ul>
+    </div>
+    <div id="recipeDisplay" class="col-sm-8">
+      <div>
+        <h3 id="title">title</h3>
+        <div class="row">
+          <p id="servings" class="col-sm-4">Serves:</p>
+          <p id="prep" class="col-sm-4">Prep Time:</p>
+          <p id="time" class="col-sm-4">Time to Cook:</p>
+        </div>
+        <h4>Ingredients</h4>
+        <p id="ingredientsList">Data</p>
+        <h4>Directions</h4>
+        <p id="directions">Data</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <script type="text/javascript">
+
+    let recipesData = [];
+    let specialsData = [];
+
+    function showRecipe (id) {
+      const recipe = recipesData.filter(r => r.title === id)[0];
+      let html;
+
+      html = document.getElementById("title");
+      html.innerHTML = recipe.title
+
+      html = document.getElementById("servings");
+      html.innerHTML = "Serves: " + recipe.servings
+
+      html = document.getElementById("prep");
+      html.innerHTML = "Prep Time: " + recipe.prepTime
+
+      html = document.getElementById("time");
+      html.innerHTML = "Time to Cook: " + recipe.cookTime
+
+      html = document.getElementById("directions");
+      html.innerHTML = "";
+      recipe.directions.forEach((item, i) => {
+        html.innerHTML += "<p>&nbsp;&nbsp;" + recipe.directions[i].instructions + "</p>";
+      });
+
+      html = document.getElementById("ingredientsList");
+      html.innerHTML = "";
+      recipe.ingredients.forEach((item, i) => {
+        const hasSpecial = specialsData.filter(s => s.ingredientId === recipe.ingredients[i].uuid)[0];
+        if (hasSpecial) {
+          html.innerHTML += "<p>&nbsp;&nbsp;" + recipe.ingredients[i].amount + " " + recipe.ingredients[i].measurement +
+          " " + recipe.ingredients[i].name + "<br/>&nbsp;&nbsp;&nbsp;&nbsp;Special: " + hasSpecial.title + ", " + hasSpecial.text + "</p>";
+        } else {
+          html.innerHTML += "<p>&nbsp;&nbsp;" + recipe.ingredients[i].amount + " " + recipe.ingredients[i].measurement + " " + recipe.ingredients[i].name + "</p>";
+        }
+      });
+    }
+
+    fetch("http://localhost:3001/recipes")
+    .then( response => {
+      return response.json();
+    })
+    .then( recipes => {
+      let list = document.getElementById("list");
+      recipes.forEach((item, i) => {
+        list.innerHTML += `<li id="listItem" onclick="showRecipe(this.innerHTML)" class="list-group-item">` + recipes[i].title + "</li>";
+      });
+
+      recipesData = recipes;
+      showRecipe(recipes[0].title)
+
+    })
+
+    fetch('http://localhost:3001/specials')
+    .then( response => {
+      return response.json();
+    })
+    .then( specials => {
+      specialsData = specials;
+    })
+  </script>
+</body>
+</html>
